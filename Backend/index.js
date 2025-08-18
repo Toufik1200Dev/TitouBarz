@@ -31,7 +31,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Middleware
+// Middleware - Enhanced CORS configuration
 app.use(cors({
   origin: true, // Allow all origins for now
   credentials: true,

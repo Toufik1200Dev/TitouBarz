@@ -31,15 +31,39 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// CORS configuration for production
+// CORS configuration for production with detailed logging
 app.use(cors({
-  origin: ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'],
+  origin: function (origin, callback) {
+    console.log('🔍 CORS Request Origin:', origin);
+    
+    const allowedOrigins = ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'];
+    
+    if (!origin || allowedOrigins.includes(origin)) {
+      console.log('✅ CORS Origin Allowed:', origin);
+      callback(null, true);
+    } else {
+      console.log('❌ CORS Origin Blocked:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'adminPassword', 'X-Requested-With'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+// Add request logging middleware
+app.use((req, res, next) => {
+  console.log('📥 Incoming Request:', {
+    method: req.method,
+    url: req.url,
+    origin: req.headers.origin,
+    userAgent: req.headers['user-agent'],
+    headers: req.headers
+  });
+  next();
+});
 
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));

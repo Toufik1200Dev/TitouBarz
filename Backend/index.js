@@ -32,26 +32,33 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // CORS configuration for production with detailed logging
-app.use(cors({
-  origin: function (origin, callback) {
-    console.log('🔍 CORS Request Origin:', origin);
-    
-    const allowedOrigins = ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'];
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      console.log('✅ CORS Origin Allowed:', origin);
-      callback(null, true);
-    } else {
-      console.log('❌ CORS Origin Blocked:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'adminPassword', 'X-Requested-With'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  console.log('🔍 CORS Request Origin:', origin);
+  
+  const allowedOrigins = ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'];
+  
+  if (!origin || allowedOrigins.includes(origin)) {
+    console.log('✅ CORS Origin Allowed:', origin);
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    console.log('❌ CORS Origin Blocked:', origin);
+    res.header('Access-Control-Allow-Origin', 'https://barz-o.web.app');
+  }
+  
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, adminPassword, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    console.log('🔄 Handling preflight request');
+    res.status(204).end();
+    return;
+  }
+  
+  next();
+});
 
 // Add request logging middleware
 app.use((req, res, next) => {

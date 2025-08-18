@@ -33,25 +33,32 @@ if (!fs.existsSync(uploadsDir)) {
 
 // CORS configuration for production with detailed logging
 app.use(cors({
-  origin: function (origin, callback) {
-    console.log('🔍 CORS Request Origin:', origin);
-    
-    const allowedOrigins = ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'];
-    
-    if (!origin || allowedOrigins.includes(origin)) {
-      console.log('✅ CORS Origin Allowed:', origin);
-      callback(null, true);
-    } else {
-      console.log('❌ CORS Origin Blocked:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'adminPassword', 'X-Requested-With'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+// Add explicit CORS headers for all responses
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ['https://barz-o.web.app', 'https://barz-o.firebaseapp.com', 'http://localhost:5173'].includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, adminPassword, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+  
+  next();
+});
 
 // Add request logging middleware
 app.use((req, res, next) => {
@@ -62,6 +69,10 @@ app.use((req, res, next) => {
     userAgent: req.headers['user-agent'],
     headers: req.headers
   });
+  
+  // Log CORS headers being set
+  console.log('🔧 Setting CORS headers for origin:', req.headers.origin);
+  
   next();
 });
 

@@ -16,20 +16,6 @@
    - **API Key**
    - **API Secret**
 
-### **Step 3: Update Your .env File**
-```env
-# Development (Local Storage)
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/titoubarz
-PORT=5000
-
-# Production (Cloudinary)
-NODE_ENV=production
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/titoubarz
-CLOUDINARY_CLOUD_NAME=your_cloud_name_here
-CLOUDINARY_API_KEY=your_api_key_here
-CLOUDINARY_API_SECRET=your_api_secret_here
-```
 
 ## 📸 **How It Works:**
 

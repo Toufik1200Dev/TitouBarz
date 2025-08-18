@@ -19,9 +19,21 @@ class CloudinaryService {
         throw new Error('Cloudinary upload only available in production');
       }
 
+      // Handle both buffer and file object
+      let buffer, mimetype;
+      if (Buffer.isBuffer(file)) {
+        buffer = file;
+        mimetype = 'image/jpeg'; // Default mimetype
+      } else if (file.buffer && file.mimetype) {
+        buffer = file.buffer;
+        mimetype = file.mimetype;
+      } else {
+        throw new Error('Invalid file format');
+      }
+
       // Convert buffer to base64 for Cloudinary
-      const base64Image = file.buffer.toString('base64');
-      const dataURI = `data:${file.mimetype};base64,${base64Image}`;
+      const base64Image = buffer.toString('base64');
+      const dataURI = `data:${mimetype};base64,${base64Image}`;
 
       // Upload to Cloudinary
       const result = await cloudinary.uploader.upload(dataURI, {

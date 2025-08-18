@@ -15,6 +15,7 @@ const contactRoutes = require('./routes/contactRoutes');
 const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const deliveryRoutes = require('./routes/deliveryRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // Import middleware
 const adminAuth = require('./middleware/adminAuth');
@@ -32,7 +33,11 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'https://barz-o.web.app',
+    'https://barz-o.firebaseapp.com'
+  ],
   credentials: true
 }));
 
@@ -57,6 +62,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Admin routes with password protection
 app.use('/api/admin/orders', adminAuth, orderRoutes);

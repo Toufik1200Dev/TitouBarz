@@ -42,6 +42,29 @@ app.use((req, res, next) => {
   next();
 });
 
+// Add CORS middleware to allow frontend requests
+app.use((req, res, next) => {
+  // Allow requests from your frontend domain
+  res.header('Access-Control-Allow-Origin', 'https://barz-o.web.app');
+  
+  // Allow specific HTTP methods
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  
+  // Allow specific headers
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Allow credentials (cookies, authorization headers)
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  
+  next();
+});
+
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 

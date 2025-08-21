@@ -24,7 +24,7 @@ Before deploying, you need to set up:
 
 **Example:**
 ```
-mongodb+srv://username:password@cluster.mongodb.net/titoubarz?retryWrites=true&w=majority
+mongodb+srv://[username]:[password]@[cluster].mongodb.net/titoubarz?retryWrites=true&w=majority
 ```
 
 ## ☁️ Cloudinary Setup
@@ -49,13 +49,13 @@ mongodb+srv://username:password@cluster.mongodb.net/titoubarz?retryWrites=true&w
 ```
 NODE_ENV=production
 PORT=10000
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/titoubarz?retryWrites=true&w=majority
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+MONGODB_URI=mongodb+srv://[username]:[password]@[cluster].mongodb.net/titoubarz?retryWrites=true&w=majority
+CLOUDINARY_CLOUD_NAME=[your_cloud_name]
+CLOUDINARY_API_KEY=[your_api_key]
+CLOUDINARY_API_SECRET=[your_api_secret]
 FRONTEND_URL=https://barz-o.web.app
-JWT_SECRET=your_super_secret_jwt_key_here
-ADMIN_PASSWORD=your_admin_panel_password
+JWT_SECRET=[your_super_secret_jwt_key_here]
+ADMIN_PASSWORD=[your_admin_panel_password]
 ```
 
 ### Option 2: Local .env File (Development)

@@ -65,7 +65,7 @@ NODE_ENV=development
 
 **For MongoDB Atlas:**
 ```env
-MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/titoubarz
+MONGODB_URI=mongodb+srv://[username]:[password]@[cluster].mongodb.net/titoubarz
 PORT=5000
 NODE_ENV=production
 ```

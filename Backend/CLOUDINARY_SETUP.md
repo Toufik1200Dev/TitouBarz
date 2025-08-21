@@ -69,9 +69,9 @@ Images → Cloudinary → MongoDB stores Cloudinary URLs
 ```bash
 # In your deployment platform (Heroku, Vercel, etc.)
 NODE_ENV=production
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_CLOUD_NAME=[your_cloud_name]
+CLOUDINARY_API_KEY=[your_api_key]
+CLOUDINARY_API_SECRET=[your_api_secret]
 ```
 
 ### **2. Test Image Upload:**

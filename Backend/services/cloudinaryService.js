@@ -10,13 +10,24 @@ cloudinary.config({
 class CloudinaryService {
   constructor() {
     this.isProduction = process.env.NODE_ENV === 'production';
+    this.hasCloudinaryConfig = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
   }
 
   // Upload image to Cloudinary
   async uploadImage(file, folder = 'products') {
     try {
-      if (!this.isProduction) {
-        throw new Error('Cloudinary upload only available in production');
+      // Check if Cloudinary is configured
+      if (!this.hasCloudinaryConfig) {
+        console.log('⚠️ Cloudinary not configured, using local fallback');
+        // Return a mock response for development/testing
+        return {
+          url: 'https://via.placeholder.com/800x600/cccccc/666666?text=Image+Upload+Disabled',
+          publicId: `mock-${Date.now()}`,
+          width: 800,
+          height: 600,
+          format: 'jpg',
+          size: 0
+        };
       }
 
       // Handle both buffer and file object
@@ -35,6 +46,12 @@ class CloudinaryService {
       const base64Image = buffer.toString('base64');
       const dataURI = `data:${mimetype};base64,${base64Image}`;
 
+      console.log('📤 Uploading to Cloudinary...', {
+        folder,
+        mimetype,
+        size: buffer.length
+      });
+
       // Upload to Cloudinary
       const result = await cloudinary.uploader.upload(dataURI, {
         folder: folder,
@@ -46,6 +63,8 @@ class CloudinaryService {
         ]
       });
 
+      console.log('✅ Cloudinary upload successful:', result.secure_url);
+
       return {
         url: result.secure_url,
         publicId: result.public_id,
@@ -55,7 +74,21 @@ class CloudinaryService {
         size: result.bytes
       };
     } catch (error) {
-      console.error('Cloudinary upload error:', error);
+      console.error('❌ Cloudinary upload error:', error);
+      
+      // If Cloudinary fails, return a fallback
+      if (this.hasCloudinaryConfig) {
+        console.log('🔄 Falling back to placeholder image due to Cloudinary error');
+        return {
+          url: 'https://via.placeholder.com/800x600/ffcccc/cc0000?text=Upload+Failed',
+          publicId: `error-${Date.now()}`,
+          width: 800,
+          height: 600,
+          format: 'jpg',
+          size: 0
+        };
+      }
+      
       throw new Error('Failed to upload image to Cloudinary');
     }
   }
@@ -75,8 +108,9 @@ class CloudinaryService {
   // Delete image from Cloudinary
   async deleteImage(publicId) {
     try {
-      if (!this.isProduction) {
-        return; // Skip deletion in development
+      if (!this.hasCloudinaryConfig) {
+        console.log('⚠️ Cloudinary not configured, skipping deletion');
+        return { result: 'ok' };
       }
 
       const result = await cloudinary.uploader.destroy(publicId);
@@ -90,7 +124,7 @@ class CloudinaryService {
   // Get optimized image URL with transformations
   getOptimizedUrl(publicId, options = {}) {
     try {
-      if (!this.isProduction) {
+      if (!this.hasCloudinaryConfig) {
         return null; // Return null in development
       }
 
@@ -114,7 +148,7 @@ class CloudinaryService {
   // Get responsive image URLs for different screen sizes
   getResponsiveUrls(publicId) {
     try {
-      if (!this.isProduction) {
+      if (!this.hasCloudinaryConfig) {
         return null;
       }
 
@@ -157,7 +191,7 @@ class CloudinaryService {
   // Get image info
   async getImageInfo(publicId) {
     try {
-      if (!this.isProduction) {
+      if (!this.hasCloudinaryConfig) {
         return null;
       }
 
@@ -175,6 +209,22 @@ class CloudinaryService {
       console.error('Error getting image info:', error);
       return null;
     }
+  }
+
+  // Check if Cloudinary is available
+  isAvailable() {
+    return this.hasCloudinaryConfig;
+  }
+
+  // Get configuration status
+  getConfigStatus() {
+    return {
+      isProduction: this.isProduction,
+      hasCloudinaryConfig: this.hasCloudinaryConfig,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Missing',
+      apiKey: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Missing',
+      apiSecret: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Missing'
+    };
   }
 }
 

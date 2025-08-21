@@ -21,26 +21,14 @@ const adminAuth = require('./middleware/adminAuth');
 
 const app = express();
 
-// Connect to MongoDB - Commented out for now to use sample data
-// connectDB();
+// Connect to MongoDB
+connectDB();
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-
-// Add request logging middleware
-app.use((req, res, next) => {
-  console.log('📥 Incoming Request:', {
-    method: req.method,
-    url: req.url,
-    origin: req.headers.origin,
-    userAgent: req.headers['user-agent']
-  });
-  
-  next();
-});
 
 // Add CORS middleware to allow frontend requests
 app.use((req, res, next) => {
@@ -77,25 +65,25 @@ app.get('/', (req, res) => {
     message: 'Welcome to TitouBarz API',
     version: '1.0.0',
     status: 'running',
-    note: 'Using sample data - database connection disabled'
+    database: 'MongoDB connected'
   });
 });
 
-// Status route to check Cloudinary configuration
+// Status route to check configuration
 app.get('/api/status', (req, res) => {
   try {
     res.json({
       message: 'TitouBarz API Status',
       version: '1.0.0',
       status: 'running',
+      database: 'MongoDB connected',
       cloudinary: {
         isProduction: process.env.NODE_ENV === 'production',
         hasCloudinaryConfig: !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET),
         cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'Set' : 'Missing',
         apiKey: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Missing',
         apiSecret: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Missing'
-      },
-      note: 'Using sample data - database connection disabled'
+      }
     });
   } catch (error) {
     console.error('Status endpoint error:', error);
@@ -138,7 +126,7 @@ app.listen(PORT, () => {
   console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:5173'}`);
   console.log(`🔗 API URL: http://localhost:${PORT}`);
   console.log(`📸 Images served from: http://localhost:${PORT}/uploads`);
-  console.log(`📝 Note: Using sample data - database connection disabled`);
+  console.log(`🗄️  Database: MongoDB connected`);
 });
 
 module.exports = app; 

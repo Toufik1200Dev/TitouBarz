@@ -11,3 +11,17 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://your_username:your_password@your_cluster.mongodb.net/titoubarz?retryWrites=true&w=majority
+      - key: CLOUDINARY_CLOUD_NAME
+        value: your_cloud_name
+      - key: CLOUDINARY_API_KEY
+        value: your_api_key
+      - key: CLOUDINARY_API_SECRET
+        value: your_api_secret
+      - key: FRONTEND_URL
+        value: https://barz-o.web.app
+      - key: JWT_SECRET
+        value: your_jwt_secret_key_here
+      - key: ADMIN_PASSWORD
+        value: your_admin_password_here

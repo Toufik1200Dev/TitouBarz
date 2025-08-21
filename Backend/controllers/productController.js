@@ -3,52 +3,9 @@ const cloudinaryService = require('../services/cloudinaryService');
 const fs = require('fs');
 const path = require('path');
 
-// Sample products data for testing (when database is not available)
-const sampleProducts = [
-  {
-    _id: '1',
-    name: 'Pull-Up Bar',
-    description: 'Professional pull-up bar for home gym',
-    price: 89.99,
-    category: 'Bars',
-    featured: true,
-    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
-    stock: 15,
-    rating: 4.8,
-    reviews: 127
-  },
-  {
-    _id: '2',
-    name: 'Resistance Bands Set',
-    description: 'Complete set of resistance bands for strength training',
-    price: 29.99,
-    category: 'Bands',
-    featured: true,
-    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
-    stock: 25,
-    rating: 4.6,
-    reviews: 89
-  },
-  {
-    _id: '3',
-    name: 'Gymnastic Rings',
-    description: 'Professional gymnastic rings for advanced training',
-    price: 69.99,
-    category: 'Rings',
-    featured: false,
-    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
-    stock: 8,
-    rating: 4.9,
-    reviews: 156
-  }
-];
-
 // Get all products with filtering and pagination
 exports.getAllProducts = async (req, res) => {
   try {
-    // For now, return sample products instead of database query
-    // This allows the frontend to work while we set up the database
-    
     const { 
       page = 1, 
       limit = 12, 
@@ -61,67 +18,75 @@ exports.getAllProducts = async (req, res) => {
       sortOrder = 'desc'
     } = req.query;
 
-    // Filter sample products
-    let filteredProducts = [...sampleProducts];
+    // Build filter object
+    const filter = {};
     
     if (category) {
-      filteredProducts = filteredProducts.filter(p => p.category === category);
+      filter.category = category;
     }
     
     if (featured === 'true') {
-      filteredProducts = filteredProducts.filter(p => p.featured === true);
+      filter.featured = true;
     }
     
     if (minPrice || maxPrice) {
-      filteredProducts = filteredProducts.filter(p => {
-        if (minPrice && p.price < parseFloat(minPrice)) return false;
-        if (maxPrice && p.price > parseFloat(maxPrice)) return false;
-        return true;
-      });
+      filter.price = {};
+      if (minPrice) filter.price.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.price.$lte = parseFloat(maxPrice);
     }
     
     if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter(p => 
-        p.name.toLowerCase().includes(searchLower) || 
-        p.description.toLowerCase().includes(searchLower)
-      );
+      filter.$text = { $search: search };
     }
 
-    // Sort products
-    filteredProducts.sort((a, b) => {
-      if (sortBy === 'price') {
-        return sortOrder === 'desc' ? b.price - a.price : a.price - b.price;
-      }
-      if (sortBy === 'rating') {
-        return sortOrder === 'desc' ? b.rating - a.rating : a.rating - b.rating;
-      }
-      // Default sort by name
-      return sortOrder === 'desc' ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name);
-    });
+    // Build sort object
+    const sort = {};
+    if (sortBy === 'price') {
+      sort.price = sortOrder === 'desc' ? -1 : 1;
+    } else if (sortBy === 'rating') {
+      sort['rating.average'] = sortOrder === 'desc' ? -1 : 1;
+    } else {
+      sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    }
 
-    // Pagination
-    const total = filteredProducts.length;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+    // Execute query with pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      Product.countDocuments(filter)
+    ]);
+
+    const totalPages = Math.ceil(total / parseInt(limit));
 
     res.json({
-      products: paginatedProducts,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-      totalProducts: total
+      products,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalProducts: total,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1
+      }
     });
+
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ message: 'Error fetching products', error: error.message });
+    console.error('❌ Error fetching products:', error);
+    res.status(500).json({ 
+      message: 'Failed to fetch products',
+      error: error.message 
+    });
   }
 };
 
 // Get featured products
 exports.getFeaturedProducts = async (req, res) => {
   try {
-    const featuredProducts = sampleProducts.filter(p => p.featured);
+    const featuredProducts = await Product.find({ featured: true }).lean();
     res.json(featuredProducts);
   } catch (error) {
     console.error('Error fetching featured products:', error);
@@ -132,7 +97,7 @@ exports.getFeaturedProducts = async (req, res) => {
 // Get single product by ID
 exports.getProductById = async (req, res) => {
   try {
-    const product = sampleProducts.find(p => p._id === req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -319,7 +284,7 @@ exports.deleteProduct = async (req, res) => {
 exports.getProductsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
-    const products = sampleProducts.filter(p => p.category === category);
+    const products = await Product.find({ category: category }).lean();
     res.json(products);
   } catch (error) {
     console.error('Error fetching products by category:', error);
@@ -336,10 +301,7 @@ exports.searchProducts = async (req, res) => {
     }
     
     const searchLower = q.toLowerCase();
-    const results = sampleProducts.filter(p => 
-      p.name.toLowerCase().includes(searchLower) || 
-      p.description.toLowerCase().includes(searchLower)
-    );
+    const results = await Product.find({ $text: { $search: searchLower } }).lean();
     
     res.json({ products: results });
   } catch (error) {
@@ -351,7 +313,7 @@ exports.searchProducts = async (req, res) => {
 // Get product categories
 exports.getProductCategories = async (req, res) => {
   try {
-    const categories = [...new Set(sampleProducts.map(p => p.category))];
+    const categories = await Product.distinct('category').lean();
     res.json(categories);
   } catch (error) {
     console.error('Error fetching categories:', error);

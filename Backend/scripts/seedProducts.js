@@ -6,9 +6,9 @@ const sampleProducts = [
   {
     name: 'Premium Pull-up Bar',
     description: 'Professional-grade pull-up bar for serious calisthenics training. Made with high-quality steel and designed for durability.',
-    price: 2500,
-    originalPrice: 3000,
-    images: ['/images/pullup-bar-1.jpg', '/images/pullup-bar-2.jpg'],
+    price: 89.99,
+    originalPrice: 119.99,
+    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
     category: 'calisthenics',
     inStock: true,
     stockQuantity: 50,
@@ -38,8 +38,9 @@ const sampleProducts = [
   {
     name: 'Gymnastic Rings Set',
     description: 'Professional gymnastic rings for advanced calisthenics movements. Perfect for building strength and stability.',
-    price: 1800,
-    images: ['/images/rings-1.jpg', '/images/rings-2.jpg'],
+    price: 69.99,
+    originalPrice: 89.99,
+    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
     category: 'calisthenics',
     inStock: true,
     stockQuantity: 30,
@@ -61,8 +62,9 @@ const sampleProducts = [
   {
     name: 'Resistance Bands Set',
     description: 'Complete set of resistance bands for progressive strength training. Includes 5 different resistance levels.',
-    price: 1200,
-    images: ['/images/bands-1.jpg', '/images/bands-2.jpg'],
+    price: 29.99,
+    originalPrice: 39.99,
+    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
     category: 'accessories',
     inStock: true,
     stockQuantity: 100,
@@ -83,8 +85,9 @@ const sampleProducts = [
   {
     name: 'Parallel Bars',
     description: 'Professional parallel bars for dips, L-sits, and other advanced calisthenics movements.',
-    price: 3200,
-    images: ['/images/parallel-bars-1.jpg', '/images/parallel-bars-2.jpg'],
+    price: 199.99,
+    originalPrice: 249.99,
+    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
     category: 'calisthenics',
     inStock: true,
     stockQuantity: 20,
@@ -98,43 +101,21 @@ const sampleProducts = [
     },
     rating: {
       average: 4.7,
-      count: 15
+      count: 18
     },
-    tags: ['parallel-bars', 'dips', 'calisthenics', 'freestanding'],
+    tags: ['parallel-bars', 'dips', 'calisthenics', 'strength'],
     featured: true
   },
   {
-    name: 'Training Mat',
-    description: 'High-density training mat for floor exercises, stretching, and yoga. Provides excellent cushioning and grip.',
-    price: 800,
-    images: ['/images/mat-1.jpg', '/images/mat-2.jpg'],
-    category: 'accessories',
-    inStock: true,
-    stockQuantity: 75,
-    specifications: {
-      material: 'High-density foam',
-      weightCapacity: 'N/A',
-      dimensions: '72" x 24" x 0.5"',
-      installation: 'No installation required',
-      warranty: '1 year'
-    },
-    rating: {
-      average: 4.5,
-      count: 18
-    },
-    tags: ['mat', 'training', 'floor-exercises', 'yoga'],
-    featured: false
-  },
-  {
     name: 'Weighted Vest',
-    description: 'Adjustable weighted vest for progressive overload training. Perfect for push-ups, pull-ups, and running.',
-    price: 2200,
-    images: ['/images/vest-1.jpg', '/images/vest-2.jpg'],
+    description: 'Adjustable weighted vest for progressive overload training. Perfect for calisthenics and bodyweight exercises.',
+    price: 79.99,
+    originalPrice: 99.99,
+    images: ['https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400'],
     category: 'accessories',
     inStock: true,
     stockQuantity: 40,
     badge: 'sale',
-    originalPrice: 2800,
     specifications: {
       material: 'Heavy-duty nylon',
       weightCapacity: 'Adjustable 10-50 lbs',
@@ -143,10 +124,10 @@ const sampleProducts = [
       warranty: '1 year'
     },
     rating: {
-      average: 4.4,
-      count: 22
+      average: 4.5,
+      count: 32
     },
-    tags: ['weighted-vest', 'progressive-overload', 'strength', 'cardio'],
+    tags: ['weighted-vest', 'progressive-overload', 'strength', 'calisthenics'],
     featured: false
   }
 ];
@@ -154,29 +135,39 @@ const sampleProducts = [
 const seedDatabase = async () => {
   try {
     // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/titoubarz');
-    console.log('Connected to MongoDB');
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/titoubarz';
+    
+    console.log('🔌 Connecting to MongoDB...');
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('✅ MongoDB connected successfully!');
 
     // Clear existing products
+    console.log('🧹 Clearing existing products...');
     await Product.deleteMany({});
-    console.log('Cleared existing products');
+    console.log('✅ Existing products cleared!');
 
-    // Insert sample products
+    // Insert new products
+    console.log('🌱 Seeding products...');
     const products = await Product.insertMany(sampleProducts);
-    console.log(`Inserted ${products.length} products`);
+    console.log(`✅ Successfully seeded ${products.length} products!`);
 
-    // Display inserted products
+    // Display seeded products
+    console.log('\n📋 Seeded Products:');
     products.forEach(product => {
-      console.log(`- ${product.name}: ${product.price} DA`);
+      console.log(`- ${product.name} (${product.category}) - $${product.price}`);
     });
 
-    console.log('Database seeded successfully!');
+    console.log('\n🎉 Database seeding completed successfully!');
     process.exit(0);
+
   } catch (error) {
-    console.error('Error seeding database:', error);
+    console.error('❌ Error seeding database:', error);
     process.exit(1);
   }
 };
 
-// Run the seed function
+// Run the seeding function
 seedDatabase();

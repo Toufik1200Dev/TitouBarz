@@ -50,8 +50,8 @@ app.use((req, res, next) => {
   // Allow specific HTTP methods
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   
-  // Allow specific headers
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  // Allow specific headers including adminpassword
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, adminpassword');
   
   // Allow credentials (cookies, authorization headers)
   res.header('Access-Control-Allow-Credentials', 'true');

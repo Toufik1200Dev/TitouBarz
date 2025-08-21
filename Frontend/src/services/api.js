@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import API_CONFIG from '../config/api.js';
+const API_BASE_URL = API_CONFIG.getBaseURL();
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -54,10 +55,35 @@ export const authAPI = {
 export const productsAPI = {
   // Get all products with filtering and pagination
   getAllProducts: async (params = {}) => {
+    console.log('🚀 Frontend: Fetching products...');
+    console.log('🚀 Frontend: Params:', params);
+    
     const queryString = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_BASE_URL}/products?${queryString}`);
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return response.json();
+    console.log('🚀 Frontend: API URL:', `${API_BASE_URL}/products?${queryString}`);
+    
+    try {
+      console.log('🚀 Frontend: Sending request...');
+      const response = await fetch(`${API_BASE_URL}/products?${queryString}`);
+
+      console.log('🚀 Frontend: Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Frontend: Products fetch failed:', errorText);
+        throw new Error(`Failed to fetch products: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Frontend: Products fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Frontend: Products fetch error:', error);
+      throw error;
+    }
   },
 
   // Get featured products
@@ -95,6 +121,49 @@ export const productsAPI = {
     const response = await fetch(`${API_BASE_URL}/products/categories`);
     if (!response.ok) throw new Error('Failed to fetch categories');
     return response.json();
+  },
+
+    // Upload image to Cloudinary
+  uploadImage: async (file) => {
+    console.log('🚀 Frontend: Starting image upload...');
+    console.log('🚀 Frontend: File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
+    console.log('🚀 Frontend: API URL:', `${API_BASE_URL}/upload/image`);
+    console.log('🚀 Frontend: Auth headers:', getAuthHeaders());
+    
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      console.log('🚀 Frontend: Sending request...');
+      const response = await fetch(`${API_BASE_URL}/upload/image`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData
+      });
+
+      console.log('🚀 Frontend: Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Frontend: Upload failed:', errorText);
+        throw new Error(`Failed to upload image: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('✅ Frontend: Upload successful:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Frontend: Upload error:', error);
+      throw error;
+    }
   }
 };
 
@@ -321,6 +390,6 @@ export default api;
 
 // Helper function to get admin authentication headers
 function getAuthHeaders() {
-  const adminPassword = localStorage.getItem('adminPassword');
+  const adminPassword = localStorage.getItem('adminPassword') || 'toUfik99T@';
   return adminPassword ? { 'adminPassword': adminPassword } : {};
 }

@@ -50,28 +50,27 @@ export default function ContactUs() {
     {
       icon: <Phone sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Phone',
-      details: ['+213 123 456 789', '+213 987 654 321'],
+      details: ['+213782442033'],
       color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
     },
     {
       icon: <Email sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Email',
-      details: ['info@titoubarz.com', 'support@titoubarz.com'],
+      details: ['titoubarz@gmail.com', 'rahmanitoufik1200@gmail.com'],
       color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     },
     {
       icon: <LocationOn sx={{ fontSize: 40, color: 'white' }} />,
       title: 'Address',
-      details: ['123 Sports Street', 'Algiers, Algeria 16000'],
+      details: ['Algiers', ' Bab Ezzouar Douzi'],
       color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
     },
   ];
 
   const socialLinks = [
     { icon: <Facebook />, name: 'Facebook', url: '#', color: '#1877f2' },
-    { icon: <Instagram />, name: 'Instagram', url: '#', color: '#e4405f' },
-    { icon: <Twitter />, name: 'Twitter', url: '#', color: '#1da1f2' },
-    { icon: <LinkedIn />, name: 'LinkedIn', url: '#', color: '#0077b5' },
+    { icon: <Instagram />, name: 'Instagram', url: 'https://www.instagram.com/toufik_titouu/', color: '#e4405f' },
+    { icon: <Tiktok />, name: 'Tiktok', url: 'https://www.tiktok.com/@toufiktitou911', color: '#1da1f2' },
   ];
 
   return (

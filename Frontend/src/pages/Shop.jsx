@@ -51,22 +51,14 @@ export default function Shop() {
   const [filteredProducts, setFilteredProducts] = useState(featuredProducts);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [priceRange, setPriceRange] = useState([0, 20000]);
   const [sortBy, setSortBy] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(12);
   const [loading, setLoading] = useState(false);
 
-  // Categories
-  const categories = [
-    'Pull-Up Bars',
-    'Parallel Bars',
-    'Resistance Bands',
-    'Training Mats',
-    'Gymnastic Rings',
-    'Weighted Vests',
-    'Dip Stations',
-  ];
+  // Categories will be dynamically loaded from products
+  const [categories, setCategories] = useState([]);
 
   const normalizeProduct = (p) => {
     if (!p) return null;
@@ -93,11 +85,14 @@ export default function Shop() {
     (async () => {
       setLoading(true);
       try {
-        const res = await productsAPI.getAll();
+        const res = await productsAPI.getAllProducts();
         const list = res?.data?.products || res?.data || [];
         const normalized = list.map(normalizeProduct).filter(Boolean);
-        if (mounted && normalized.length) {
+        if (mounted) {
           setProducts(normalized);
+          // Extract unique categories from products
+          const uniqueCategories = [...new Set(normalized.map(p => p.category).filter(Boolean))];
+          setCategories(uniqueCategories);
           setFilteredProducts(normalized);
         }
       } catch (e) {
@@ -179,7 +174,7 @@ export default function Shop() {
   const clearFilters = () => {
     setSearchTerm('');
     setSelectedCategory('');
-    setPriceRange([0, 5000]);
+    setPriceRange([0, 20000]);
     setSortBy('name');
   };
 
@@ -250,14 +245,14 @@ export default function Shop() {
       {/* Price Range */}
       <Box sx={{ mb: 3 }}>
         <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 'bold', mb: 2, color: 'var(--primary-color)' }}>
-          Price Range: {priceRange[0]} - {priceRange[1]} DA
+          Price Range: {priceRange[0].toLocaleString()} - {priceRange[1].toLocaleString()} DA
         </Typography>
         <Slider
           value={priceRange}
           onChange={(e, newValue) => setPriceRange(newValue)}
           valueLabelDisplay="auto"
           min={0}
-          max={5000}
+          max={20000}
           sx={{
             '& .MuiSlider-thumb': {
               background: 'var(--primary-gradient)',
@@ -486,24 +481,33 @@ export default function Shop() {
         <Grid container spacing={4}>
           {/* Products Grid */}
           <Grid item xs={12} md={12}>
-            {currentProducts.length === 0 && !loading ? (
+            {loading ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <FitnessCenter sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
-                  No products found matching your criteria
+                  Loading products...
                 </Typography>
-                <Button
-                  variant="contained"
-                  onClick={clearFilters}
-                  sx={{ 
-                    borderRadius: '50px',
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: 4,
-                  }}
-                >
-                  Clear Filters
-                </Button>
+              </Box>
+            ) : currentProducts.length === 0 ? (
+              <Box sx={{ textAlign: 'center', py: 8 }}>
+                <FitnessCenter sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                  {products.length === 0 ? 'No products available yet' : 'No products found matching your criteria'}
+                </Typography>
+                {products.length > 0 && (
+                  <Button
+                    variant="contained"
+                    onClick={clearFilters}
+                    sx={{ 
+                      borderRadius: '50px',
+                      textTransform: 'none',
+                      fontWeight: 'bold',
+                      px: 4,
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </Box>
             ) : (
               <>
@@ -582,7 +586,7 @@ export default function Shop() {
                           </Box>
                           <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                             <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold' }}>
-                              {product.price} DA
+                              {parseFloat(product.price).toLocaleString()} DA
                             </Typography>
                             {product.originalPrice && (
                               <Typography
@@ -590,7 +594,7 @@ export default function Shop() {
                                 color="text.secondary"
                                 sx={{ textDecoration: 'line-through', ml: 1 }}
                               >
-                                {product.originalPrice} DA
+                                {parseFloat(product.originalPrice).toLocaleString()} DA
                               </Typography>
                             )}
                           </Box>

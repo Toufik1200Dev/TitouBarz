@@ -35,18 +35,7 @@ export default function Cart() {
   const navigate = useNavigate();
 
   // Mock cart data - in real app, this would come from context/state management
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      product: featuredProducts[0],
-      quantity: 2,
-    },
-    {
-      id: 2,
-      product: featuredProducts[1],
-      quantity: 1,
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
 
   const updateQuantity = (itemId, newQuantity) => {
     if (newQuantity < 1) return;

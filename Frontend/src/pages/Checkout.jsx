@@ -59,35 +59,12 @@ export default function Checkout() {
   const [selectedWilaya, setSelectedWilaya] = useState('');
   const [selectedCommune, setSelectedCommune] = useState('');
 
-  // Mock cart data
-  const cartItems = [
-    {
-      id: 1,
-      product: featuredProducts[0],
-      quantity: 2,
-    },
-    {
-      id: 2,
-      product: featuredProducts[1],
-      quantity: 1,
-    },
-  ];
+  // Production-ready empty cart - will be populated from context/state
+  const cartItems = [];
 
-  // Mock wilayas data
-  const wilayas = [
-    { id: 16, name: 'Alger' },
-    { id: 31, name: 'Oran' },
-    { id: 25, name: 'Constantine' },
-    { id: 19, name: 'Sétif' },
-    { id: 6, name: 'Béjaïa' },
-  ];
-
-  const communes = [
-    { id: 1, name: 'Commune 1', wilayaId: 16 },
-    { id: 2, name: 'Commune 2', wilayaId: 16 },
-    { id: 3, name: 'Commune 3', wilayaId: 31 },
-    { id: 4, name: 'Commune 4', wilayaId: 31 },
-  ];
+  // Production-ready empty data - will be loaded from API
+  const [wilayas, setWilayas] = useState([]);
+  const [communes, setCommunes] = useState([]);
 
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {

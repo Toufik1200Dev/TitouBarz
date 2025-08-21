@@ -62,10 +62,8 @@ const footerLinks = {
 
 const socialLinks = [
   { icon: <Facebook />, href: '#', label: 'Facebook' },
-  { icon: <Twitter />, href: '#', label: 'Twitter' },
-  { icon: <Instagram />, href: '#', label: 'Instagram' },
+  { icon: <Instagram />, href: 'https://www.instagram.com/toufik_titouu/', label: 'Instagram' },
   { icon: <YouTube />, href: '#', label: 'YouTube' },
-  { icon: <LinkedIn />, href: '#', label: 'LinkedIn' },
 ];
 
 const features = [
@@ -206,19 +204,19 @@ export default function Footer() {
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <LocationOn sx={{ mr: 2, color: 'var(--accent-color)' }} />
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    123 Fitness Street, Sports City, SC 12345
+                    Algiers, Bab Ezzouar Douzi
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                   <Phone sx={{ mr: 2, color: 'var(--accent-color)' }} />
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    +1 (555) 123-4567
+                    +213782442033
                   </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <Email sx={{ mr: 2, color: 'var(--accent-color)' }} />
                   <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                    info@titoubarz.com
+                    titoubarz@gmail.com
                   </Typography>
                 </Box>
               </Box>

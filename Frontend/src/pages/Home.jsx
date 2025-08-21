@@ -30,57 +30,8 @@ import { useCart } from '../contexts/CartContext';
 import { productsAPI } from '../services/api';
 import HeroSlider from '../components/HeroSlider';
 
-// Default featured products for when API is not available
-const defaultFeaturedProducts = [
-  {
-    _id: 1,
-    id: 1,
-    name: 'Premium Pull-up Bar',
-    description: 'Professional-grade pull-up bar for serious calisthenics training. Made with high-quality steel and designed for durability.',
-    price: 2500,
-    originalPrice: 3000,
-    images: ['/images/pullup-bar.jpg'],
-    category: 'calisthenics',
-    inStock: true,
-    badge: 'featured',
-    rating: { average: 4.8, count: 12 }
-  },
-  {
-    _id: 2,
-    id: 2,
-    name: 'Gymnastic Rings Set',
-    description: 'Professional gymnastic rings for advanced calisthenics movements. Perfect for building strength and stability.',
-    price: 1800,
-    images: ['/images/gymnastic-rings.jpg'],
-    category: 'calisthenics',
-    inStock: true,
-    badge: 'new',
-    rating: { average: 4.9, count: 8 }
-  },
-  {
-    _id: 3,
-    id: 3,
-    name: 'Resistance Bands Set',
-    description: 'Complete set of resistance bands for progressive strength training. Includes 5 different resistance levels.',
-    price: 1200,
-    images: ['/images/resistance-bands.jpg'],
-    category: 'accessories',
-    inStock: true,
-    rating: { average: 4.6, count: 25 }
-  },
-  {
-    _id: 4,
-    id: 4,
-    name: 'Parallel Bars',
-    description: 'Professional parallel bars for dips, L-sits, and other advanced calisthenics movements.',
-    price: 3200,
-    images: ['/images/parallel-bars.jpg'],
-    category: 'calisthenics',
-    inStock: true,
-    badge: 'best-seller',
-    rating: { average: 4.7, count: 15 }
-  }
-];
+// Production-ready empty products - will be loaded from API
+const defaultFeaturedProducts = [];
 
 
 
@@ -123,8 +74,8 @@ export default function Home() {
   const features = [
     {
       icon: <LocalShipping />,
-      title: 'Free Shipping',
-      description: 'Free shipping on orders over 5000 DA',
+      title: 'Shipping Service',
+      description: 'Shipping service across algeria in less than 24 hours',
     },
     {
       icon: <Security />,

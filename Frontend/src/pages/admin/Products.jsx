@@ -30,6 +30,7 @@ import {
   Edit as EditIcon,
   Image as ImageIcon,
   Search as SearchIcon,
+  CloudUpload as CloudUploadIcon,
 } from '@mui/icons-material';
 import { productsAPI, apiUtils } from '../../services/api';
 
@@ -69,12 +70,35 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const [uploadingImages, setUploadingImages] = useState([]);
+
   const handleImageChange = (index, value) => {
     setForm((prev) => {
       const images = Array.isArray(prev.images) ? [...prev.images] : [];
       images[index] = value;
       return { ...prev, images };
     });
+  };
+
+  const handleFileUpload = async (index, file) => {
+    if (!file) return;
+    
+    // Set uploading state
+    setUploadingImages(prev => ({ ...prev, [index]: true }));
+    
+    try {
+      const result = await productsAPI.uploadImage(file);
+      const imageUrl = result.data?.url || result.url;
+      
+      if (imageUrl) {
+        handleImageChange(index, imageUrl);
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImages(prev => ({ ...prev, [index]: false }));
+    }
   };
 
   const addImageField = () => {
@@ -96,20 +120,20 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-      <Grid container spacing={2}>
-        <Grid item xs={12} md={6}>
+      <Grid container spacing={{ xs: 1, sm: 2 }}>
+        <Grid item xs={12} sm={6}>
           <TextField label="Name" value={form.name} onChange={handleChange('name')} fullWidth required />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} sm={6}>
           <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth required type="number" inputProps={{ step: '0.01' }} />
         </Grid>
-        <Grid item xs={12} md={3}>
+        <Grid item xs={12} sm={6}>
           <TextField label="Original Price" value={form.originalPrice} onChange={handleChange('originalPrice')} fullWidth type="number" inputProps={{ step: '0.01' }} />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField label="Category" value={form.category} onChange={handleChange('category')} fullWidth />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} sm={6}>
           <TextField label="Stock Quantity" value={form.stockQuantity} onChange={handleChange('stockQuantity')} fullWidth type="number" />
         </Grid>
         <Grid item xs={12}>
@@ -117,32 +141,88 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
         </Grid>
 
         <Grid item xs={12}>
-          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Images (URLs)</Typography>
-          <Grid container spacing={1}>
-            {(form.images || []).map((url, idx) => (
-              <Grid item xs={12} key={idx}>
-                <TextField
-                  value={url}
-                  onChange={(e) => handleImageChange(idx, e.target.value)}
-                  placeholder="https://..."
-                  fullWidth
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <ImageIcon />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <Button color="error" onClick={() => removeImageField(idx)}>Remove</Button>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+          <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Product Images</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Upload images directly or provide URLs. Images will be stored in Cloudinary.
+          </Typography>
+                     <Grid container spacing={{ xs: 1, sm: 2 }}>
+             {(form.images || []).map((url, idx) => (
+               <Grid item xs={12} sm={6} key={idx}>
+                <Box sx={{ border: '2px dashed #ddd', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                  {/* Image Preview */}
+                  {url && (
+                    <Box sx={{ mb: 2 }}>
+                      <img 
+                        src={url} 
+                        alt={`Product ${idx + 1}`} 
+                        style={{ 
+                          width: '100%', 
+                          height: '150px', 
+                          objectFit: 'cover', 
+                          borderRadius: 8 
+                        }} 
+                      />
+                    </Box>
+                  )}
+                  
+                  {/* File Upload Input */}
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id={`image-upload-${idx}`}
+                    type="file"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        handleFileUpload(idx, file);
+                      }
+                    }}
+                  />
+                  <label htmlFor={`image-upload-${idx}`}>
+                    <Button
+                      component="span"
+                      variant="outlined"
+                      startIcon={uploadingImages[idx] ? <ImageIcon /> : <CloudUploadIcon />}
+                      disabled={uploadingImages[idx]}
+                      sx={{ mb: 1 }}
+                    >
+                      {uploadingImages[idx] ? 'Uploading...' : 'Upload Image'}
+                    </Button>
+                  </label>
+                  
+                  {/* URL Input */}
+                  <TextField
+                    value={url}
+                    onChange={(e) => handleImageChange(idx, e.target.value)}
+                    placeholder="Or enter image URL..."
+                    fullWidth
+                    size="small"
+                    sx={{ mt: 1 }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <ImageIcon />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                  
+                  {/* Remove Button */}
+                  <Button 
+                    color="error" 
+                    size="small" 
+                    onClick={() => removeImageField(idx)}
+                    sx={{ mt: 1 }}
+                  >
+                    Remove
+                  </Button>
+                </Box>
               </Grid>
             ))}
             <Grid item xs={12}>
-              <Button onClick={addImageField} startIcon={<AddIcon />}>Add Image</Button>
+              <Button onClick={addImageField} startIcon={<AddIcon />} variant="outlined">
+                Add Another Image
+              </Button>
             </Grid>
           </Grid>
         </Grid>
@@ -155,10 +235,31 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
         </Grid>
       </Grid>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 3 }}>
-        <Button onClick={onCancel} variant="outlined">Cancel</Button>
-        <Button type="submit" variant="contained" disabled={isSubmitting}>Save</Button>
-      </Box>
+             <Box sx={{ 
+         display: 'flex', 
+         flexDirection: { xs: 'column', sm: 'row' },
+         justifyContent: 'flex-end', 
+         gap: { xs: 1, sm: 2 }, 
+         mt: 3 
+       }}>
+         <Button 
+           onClick={onCancel} 
+           variant="outlined"
+           fullWidth={{ xs: true, sm: false }}
+           sx={{ order: { xs: 2, sm: 1 } }}
+         >
+           Cancel
+         </Button>
+         <Button 
+           type="submit" 
+           variant="contained" 
+           disabled={isSubmitting}
+           fullWidth={{ xs: true, sm: false }}
+           sx={{ order: { xs: 1, sm: 2 } }}
+         >
+           Save
+         </Button>
+       </Box>
     </Box>
   );
 }
@@ -180,7 +281,7 @@ export default function Products() {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const res = await productsAPI.getAll();
+      const res = await productsAPI.getAllProducts();
       const list = res?.data?.products || res?.data || [];
       setProducts(list.map(normalizeProductFromApi).filter(Boolean));
     } catch (err) {
@@ -262,13 +363,28 @@ export default function Products() {
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+    <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'stretch', sm: 'center' }, 
+        justifyContent: 'space-between', 
+        mb: 3,
+        gap: { xs: 2, sm: 0 }
+      }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>Products</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>Products</Typography>
           <Typography variant="body2" color="text.secondary">Manage catalog, add, edit and delete products</Typography>
         </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>Add Product</Button>
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />} 
+          onClick={openCreate}
+          fullWidth={{ xs: true, sm: false }}
+          sx={{ minWidth: { sm: 'auto' } }}
+        >
+          Add Product
+        </Button>
       </Box>
 
       <Paper sx={{ p: 2, mb: 2 }}>
@@ -281,7 +397,75 @@ export default function Products() {
         />
       </Paper>
 
-      <TableContainer component={Paper}>
+            {/* Mobile Card View */}
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+        {filtered.map((p) => (
+          <Paper key={p.id} sx={{ p: 2, mb: 2, borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+              <img 
+                src={p.image || placeholderImage} 
+                alt={p.name} 
+                style={{ 
+                  width: 80, 
+                  height: 80, 
+                  objectFit: 'cover', 
+                  borderRadius: 8,
+                  flexShrink: 0
+                }} 
+              />
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>{p.name}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {p.description?.slice(0, 80)}...
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                  <Chip label={p.category} size="small" variant="outlined" />
+                  <Chip 
+                    label={p.inStock ? 'In Stock' : 'Out of Stock'} 
+                    color={p.inStock ? 'success' : 'default'} 
+                    size="small" 
+                  />
+                  {p.isFeatured && (
+                    <Chip label="Featured" color="primary" size="small" />
+                  )}
+                </Box>
+                <Typography variant="h6" color="primary" sx={{ fontWeight: 'bold', mb: 2 }}>
+                  {Number(p.price).toFixed(2)} DA
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<EditIcon />}
+                    onClick={() => openEdit(p)}
+                    sx={{ flex: 1 }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => handleDelete(p.id)}
+                    sx={{ flex: 1 }}
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          </Paper>
+        ))}
+        {filtered.length === 0 && (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="body2" color="text.secondary">No products found</Typography>
+          </Paper>
+        )}
+      </Box>
+
+      {/* Desktop Table View */}
+      <TableContainer component={Paper} sx={{ display: { xs: 'none', md: 'block' } }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -305,7 +489,7 @@ export default function Products() {
                   <Typography variant="caption" color="text.secondary">{p.description?.slice(0, 60)}</Typography>
                 </TableCell>
                 <TableCell>{p.category}</TableCell>
-                                              <TableCell>{Number(p.price).toFixed(2)} DA</TableCell>
+                <TableCell>{Number(p.price).toFixed(2)} DA</TableCell>
                 <TableCell>
                   {p.inStock ? <Chip label="In Stock" color="success" size="small" /> : <Chip label="Out" color="default" size="small" />}
                 </TableCell>
@@ -333,14 +517,32 @@ export default function Products() {
         </Table>
       </TableContainer>
 
-      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
-        <DialogTitle>{editing?.id ? 'Edit Product' : 'Add Product'}</DialogTitle>
-        <DialogContent>
+      <Dialog 
+        open={dialogOpen} 
+        onClose={closeDialog} 
+        maxWidth="md" 
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: 2, sm: 'auto' },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+            maxWidth: { xs: '100%', sm: '600px' }
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          fontSize: { xs: '1.25rem', sm: '1.5rem' },
+          px: { xs: 2, sm: 3 },
+          py: { xs: 2, sm: 2.5 }
+        }}>
+          {editing?.id ? 'Edit Product' : 'Add Product'}
+        </DialogTitle>
+        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
           {editing && (
             <ProductForm initialValue={editing} onSubmit={handleSubmit} onCancel={closeDialog} isSubmitting={submitting} />
           )}
         </DialogContent>
-        <DialogActions />
+        <DialogActions sx={{ px: { xs: 2, sm: 3 }, pb: { xs: 2, sm: 2.5 } }} />
       </Dialog>
     </Container>
   );

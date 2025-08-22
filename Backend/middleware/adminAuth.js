@@ -1,5 +1,5 @@
 const adminAuth = (req, res, next) => {
-  const { adminPassword } = req.headers;
+  const adminPassword = req.headers.adminpassword;
   
   if (!adminPassword) {
     return res.status(401).json({
@@ -8,7 +8,17 @@ const adminAuth = (req, res, next) => {
     });
   }
   
-  if (adminPassword !== 'toUfik99T@') {
+  const expectedPassword = process.env.ADMIN_PASSWORD;
+  
+  if (!expectedPassword) {
+    console.error('❌ ADMIN_PASSWORD environment variable not set');
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error'
+    });
+  }
+  
+  if (adminPassword !== expectedPassword) {
     return res.status(403).json({
       success: false,
       message: 'Invalid admin password'

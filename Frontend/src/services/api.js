@@ -169,6 +169,19 @@ export const productsAPI = {
 
 // Admin API (comprehensive admin functions)
 export const adminAPI = {
+  // Admin Authentication
+  login: (password) => {
+    // Store admin password in localStorage for future requests
+    localStorage.setItem('adminPassword', password);
+    return Promise.resolve({ success: true, message: 'Admin logged in successfully' });
+  },
+  
+  logout: () => {
+    // Remove admin password from localStorage
+    localStorage.removeItem('adminPassword');
+    return Promise.resolve({ success: true, message: 'Admin logged out successfully' });
+  },
+  
   // Dashboard
   getDashboardStats: () => api.get('/admin/dashboard/stats'),
   getRecentOrders: () => api.get('/admin/dashboard/recent-orders'),
@@ -390,6 +403,14 @@ export default api;
 
 // Helper function to get admin authentication headers
 function getAuthHeaders() {
-  const adminPassword = localStorage.getItem('adminPassword') || 'toUfik99T@';
-  return adminPassword ? { 'adminPassword': adminPassword } : {};
+  // Get admin password from localStorage or use a default
+  // You should set this in localStorage when admin logs in
+  const adminPassword = localStorage.getItem('adminPassword');
+  
+  if (!adminPassword) {
+    console.warn('⚠️ Admin password not found in localStorage. Please log in as admin first.');
+    return {};
+  }
+  
+  return { 'adminpassword': adminPassword };
 }

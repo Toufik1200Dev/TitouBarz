@@ -23,6 +23,7 @@ import {
   TextField,
   Tooltip,
   Typography,
+  Alert,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -31,8 +32,9 @@ import {
   Image as ImageIcon,
   Search as SearchIcon,
   CloudUpload as CloudUploadIcon,
+  Lock as LockIcon,
 } from '@mui/icons-material';
-import { productsAPI, apiUtils } from '../../services/api';
+import { productsAPI, apiUtils, adminAPI } from '../../services/api';
 
 const placeholderImage = '/placeholder.svg?height=120&width=120';
 
@@ -265,12 +267,13 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
 }
 
 export default function Products() {
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminError, setAdminError] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -279,15 +282,12 @@ export default function Products() {
   }, [products, search]);
 
   const loadProducts = async () => {
-    setLoading(true);
     try {
       const res = await productsAPI.getAllProducts();
       const list = res?.data?.products || res?.data || [];
       setProducts(list.map(normalizeProductFromApi).filter(Boolean));
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -362,6 +362,17 @@ export default function Products() {
     }
   };
 
+  const handleAdminLogin = async () => {
+    setAdminError('');
+    try {
+      await adminAPI.login(adminPassword);
+      setAdminPassword(''); // Clear password field
+      alert('Admin login successful! You can now upload images and manage products.');
+    } catch {
+      setAdminError('Invalid admin password. Please try again.');
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ px: { xs: 2, sm: 3 } }}>
       <Box sx={{ 
@@ -396,6 +407,34 @@ export default function Products() {
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
         />
       </Paper>
+
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          label="Admin Password"
+          type="password"
+          value={adminPassword}
+          onChange={(e) => setAdminPassword(e.target.value)}
+          fullWidth
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LockIcon />
+              </InputAdornment>
+            ),
+          }}
+          error={!!adminError}
+          helperText={adminError}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleAdminLogin}
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Login as Admin
+        </Button>
+      </Box>
 
             {/* Mobile Card View */}
       <Box sx={{ display: { xs: 'block', md: 'none' } }}>

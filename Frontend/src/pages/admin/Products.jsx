@@ -64,11 +64,20 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
   const [form, setForm] = useState(() => initialValue);
 
   useEffect(() => {
+    console.log('🔄 ProductForm: initialValue changed:', initialValue);
+    console.log('🔄 ProductForm: initialValue.images:', initialValue.images);
     setForm(initialValue);
   }, [initialValue]);
 
+  // Debug: Log form state changes
+  useEffect(() => {
+    console.log('📝 ProductForm: form state changed:', form);
+    console.log('📝 ProductForm: form.images:', form.images);
+  }, [form]);
+
   const handleChange = (field) => (e) => {
     const value = e?.target?.type === 'checkbox' ? e.target.checked : e.target.value;
+    console.log('✏️ Field change:', field, 'Value:', value);
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -101,10 +110,7 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
         console.log('✅ Image uploaded successfully:', imageUrl);
         console.log('🔄 Updating form state for index:', index, 'with URL:', imageUrl);
         
-        // Update the form state
-        handleImageChange(index, imageUrl);
-        
-        // Force a re-render by updating the form state
+        // Update the form state directly
         setForm(prev => {
           const newImages = [...(prev.images || [])];
           newImages[index] = imageUrl;
@@ -170,80 +176,84 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             Upload images directly or provide URLs. Images will be stored in Cloudinary.
           </Typography>
-                     <Grid container spacing={{ xs: 1, sm: 2 }}>
-             {(form.images || []).map((url, idx) => (
-               <Grid item xs={12} sm={6} key={idx}>
-                <Box sx={{ border: '2px dashed #ddd', borderRadius: 2, p: 2, textAlign: 'center' }}>
-                  {/* Image Preview */}
-                  {url && (
-                    <Box sx={{ mb: 2 }}>
-                      <img 
-                        src={url} 
-                        alt={`Product ${idx + 1}`} 
-                        style={{ 
-                          width: '100%', 
-                          height: '150px', 
-                          objectFit: 'cover', 
-                          borderRadius: 8 
-                        }} 
-                      />
-                    </Box>
-                  )}
-                  
-                  {/* File Upload Input */}
-                  <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id={`image-upload-${idx}`}
-                    type="file"
-                    onChange={(e) => {
-                      const file = e.target.files[0];
-                      if (file) {
-                        handleFileUpload(idx, file);
-                      }
-                    }}
-                  />
-                  <label htmlFor={`image-upload-${idx}`}>
-                    <Button
-                      component="span"
-                      variant="outlined"
-                      startIcon={uploadingImages[idx] ? <ImageIcon /> : <CloudUploadIcon />}
-                      disabled={uploadingImages[idx]}
-                      sx={{ mb: 1 }}
+          {console.log('🎨 Rendering images section. form.images:', form.images)}
+          <Grid container spacing={{ xs: 1, sm: 2 }}>
+            {(form.images || []).map((url, idx) => {
+              console.log(`🎨 Rendering image ${idx}:`, url);
+              return (
+                <Grid item xs={12} sm={6} key={idx}>
+                  <Box sx={{ border: '2px dashed #ddd', borderRadius: 2, p: 2, textAlign: 'center' }}>
+                    {/* Image Preview */}
+                    {url && (
+                      <Box sx={{ mb: 2 }}>
+                        <img 
+                          src={url} 
+                          alt={`Product ${idx + 1}`} 
+                          style={{ 
+                            width: '100%', 
+                            height: '150px', 
+                            objectFit: 'cover', 
+                            borderRadius: 8 
+                          }} 
+                        />
+                      </Box>
+                    )}
+                    
+                    {/* File Upload Input */}
+                    <input
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      id={`image-upload-${idx}`}
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          handleFileUpload(idx, file);
+                        }
+                      }}
+                    />
+                    <label htmlFor={`image-upload-${idx}`}>
+                      <Button
+                        component="span"
+                        variant="outlined"
+                        startIcon={uploadingImages[idx] ? <ImageIcon /> : <CloudUploadIcon />}
+                        disabled={uploadingImages[idx]}
+                        sx={{ mb: 1 }}
+                      >
+                        {uploadingImages[idx] ? 'Uploading...' : 'Upload Image'}
+                      </Button>
+                    </label>
+                    
+                    {/* URL Input */}
+                    <TextField
+                      value={url}
+                      onChange={(e) => handleImageChange(idx, e.target.value)}
+                      placeholder="Or enter image URL..."
+                      fullWidth
+                      size="small"
+                      sx={{ mt: 1 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <ImageIcon />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    
+                    {/* Remove Button */}
+                    <Button 
+                      color="error" 
+                      size="small" 
+                      onClick={() => removeImageField(idx)}
+                      sx={{ mt: 1 }}
                     >
-                      {uploadingImages[idx] ? 'Uploading...' : 'Upload Image'}
+                      Remove
                     </Button>
-                  </label>
-                  
-                  {/* URL Input */}
-                  <TextField
-                    value={url}
-                    onChange={(e) => handleImageChange(idx, e.target.value)}
-                    placeholder="Or enter image URL..."
-                    fullWidth
-                    size="small"
-                    sx={{ mt: 1 }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <ImageIcon />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  
-                  {/* Remove Button */}
-                  <Button 
-                    color="error" 
-                    size="small" 
-                    onClick={() => removeImageField(idx)}
-                    sx={{ mt: 1 }}
-                  >
-                    Remove
-                  </Button>
-                </Box>
-              </Grid>
-            ))}
+                  </Box>
+                </Grid>
+              );
+            })}
             <Grid item xs={12}>
               <Button onClick={addImageField} startIcon={<AddIcon />} variant="outlined">
                 Add Another Image

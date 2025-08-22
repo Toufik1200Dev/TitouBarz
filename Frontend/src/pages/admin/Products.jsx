@@ -85,6 +85,8 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
   const handleFileUpload = async (index, file) => {
     if (!file) return;
     
+    console.log('📁 Starting file upload for index:', index, 'File:', file.name);
+    
     // Set uploading state
     setUploadingImages(prev => ({ ...prev, [index]: true }));
     
@@ -97,7 +99,20 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
       
       if (imageUrl) {
         console.log('✅ Image uploaded successfully:', imageUrl);
+        console.log('🔄 Updating form state for index:', index, 'with URL:', imageUrl);
+        
+        // Update the form state
         handleImageChange(index, imageUrl);
+        
+        // Force a re-render by updating the form state
+        setForm(prev => {
+          const newImages = [...(prev.images || [])];
+          newImages[index] = imageUrl;
+          console.log('📝 New images array:', newImages);
+          return { ...prev, images: newImages };
+        });
+        
+        console.log('✅ Form state updated successfully');
       } else {
         console.error('❌ No image URL in response:', result);
         console.log('🔍 Response structure:', JSON.stringify(result, null, 2));
@@ -330,6 +345,10 @@ export default function Products() {
 
   const handleSubmit = async (form) => {
     console.log('🚀 Submitting form:', form);
+    console.log('🔍 Form images:', form.images);
+    console.log('🔍 Form images type:', typeof form.images);
+    console.log('🔍 Form images length:', form.images?.length);
+    
     setSubmitting(true);
     try {
       const payload = {
@@ -345,6 +364,9 @@ export default function Products() {
       };
       
       console.log('📦 Formatted payload:', payload);
+      console.log('🔍 Payload images:', payload.images);
+      console.log('🔍 Payload images type:', typeof payload.images);
+      console.log('🔍 Payload images length:', payload.images?.length);
 
       if (editing && editing.id) {
         console.log('🔄 Updating product:', editing.id);
@@ -352,14 +374,22 @@ export default function Products() {
         console.log('✅ Product updated successfully');
       } else {
         console.log('➕ Creating new product');
-        await productsAPI.create(payload);
-        console.log('✅ Product created successfully');
+        console.log('🔑 Auth headers available:', !!localStorage.getItem('adminPassword'));
+        
+        const result = await productsAPI.create(payload);
+        console.log('✅ Product created successfully:', result);
       }
 
       await loadProducts();
       closeDialog();
     } catch (error) {
       console.error('❌ Form submission error:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        status: error.status,
+        response: error.response,
+        stack: error.stack
+      });
       const { message } = apiUtils.handleError(error);
       alert(message);
     } finally {

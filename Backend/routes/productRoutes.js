@@ -13,8 +13,8 @@ router.get('/category/:category', productController.getProductsByCategory);
 router.get('/:id', productController.getProductById);
 
 // Admin routes (protected by admin middleware)
-router.post('/', adminAuth, productController.createProduct);
-router.put('/:id', adminAuth, productController.updateProduct);
+router.post('/', adminAuth, upload.array('images', 5), productController.createProduct);
+router.put('/:id', adminAuth, upload.array('images', 5), productController.updateProduct);
 router.delete('/:id', adminAuth, productController.deleteProduct);
 
 module.exports = router; 

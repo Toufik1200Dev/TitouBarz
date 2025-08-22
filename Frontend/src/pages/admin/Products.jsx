@@ -92,14 +92,15 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
       const result = await productsAPI.uploadImage(file);
       console.log('📸 Upload result:', result);
       
-      // Extract the image URL from the response
-      const imageUrl = result.data?.url || result.url || result.data?.data?.url;
+      // Extract the image URL from the response - backend sends: {success: true, data: {url: "..."}}
+      const imageUrl = result.data?.url;
       
       if (imageUrl) {
         console.log('✅ Image uploaded successfully:', imageUrl);
         handleImageChange(index, imageUrl);
       } else {
         console.error('❌ No image URL in response:', result);
+        console.log('🔍 Response structure:', JSON.stringify(result, null, 2));
         alert('Upload successful but no image URL received. Please try again.');
       }
     } catch (error) {
@@ -134,7 +135,7 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
           <TextField label="Name" value={form.name} onChange={handleChange('name')} fullWidth required />
         </Grid>
         <Grid item xs={12} sm={6}>
-          <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth required type="number" inputProps={{ step: '0.01' }} />
+          <TextField label="Price" value={form.price} onChange={handleChange('price')} fullWidth required type="number" inputProps={{ step: '0.01', min: '0' }} />
         </Grid>
         <Grid item xs={12} sm={6}>
           <TextField label="Original Price" value={form.originalPrice} onChange={handleChange('originalPrice')} fullWidth type="number" inputProps={{ step: '0.01' }} />

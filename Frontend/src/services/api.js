@@ -441,8 +441,7 @@ export default api;
 
 // Helper function to get admin authentication headers
 function getAuthHeaders() {
-  // Get admin password from localStorage or use a default
-  // You should set this in localStorage when admin logs in
+  // Get admin password from localStorage
   const adminPassword = localStorage.getItem('adminPassword');
   
   if (!adminPassword) {
@@ -450,5 +449,6 @@ function getAuthHeaders() {
     return {};
   }
   
+  // Send as 'adminpassword' header (lowercase as per backend expectation)
   return { 'adminpassword': adminPassword };
 }

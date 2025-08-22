@@ -123,7 +123,45 @@ export const productsAPI = {
     return response.json();
   },
 
-    // Upload image to Cloudinary
+  // Create new product
+  create: async (productData) => {
+    const response = await fetch(`${API_BASE_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify(productData)
+    });
+    if (!response.ok) throw new Error('Failed to create product');
+    return response.json();
+  },
+
+  // Update existing product
+  update: async (id, productData) => {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders()
+      },
+      body: JSON.stringify(productData)
+    });
+    if (!response.ok) throw new Error('Failed to update product');
+    return response.json();
+  },
+
+  // Delete product
+  delete: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Failed to delete product');
+    return response.json();
+  },
+
+  // Upload image to Cloudinary
   uploadImage: async (file) => {
     console.log('🚀 Frontend: Starting image upload...');
     console.log('🚀 Frontend: File details:', {

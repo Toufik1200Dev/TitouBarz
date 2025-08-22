@@ -90,14 +90,21 @@ function ProductForm({ initialValue, onSubmit, onCancel, isSubmitting }) {
     
     try {
       const result = await productsAPI.uploadImage(file);
-      const imageUrl = result.data?.url || result.url;
+      console.log('📸 Upload result:', result);
+      
+      // Extract the image URL from the response
+      const imageUrl = result.data?.url || result.url || result.data?.data?.url;
       
       if (imageUrl) {
+        console.log('✅ Image uploaded successfully:', imageUrl);
         handleImageChange(index, imageUrl);
+      } else {
+        console.error('❌ No image URL in response:', result);
+        alert('Upload successful but no image URL received. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to upload image:', error);
-      alert('Failed to upload image. Please try again.');
+      console.error('❌ Failed to upload image:', error);
+      alert(`Failed to upload image: ${error.message}`);
     } finally {
       setUploadingImages(prev => ({ ...prev, [index]: false }));
     }
@@ -321,6 +328,7 @@ export default function Products() {
   };
 
   const handleSubmit = async (form) => {
+    console.log('🚀 Submitting form:', form);
     setSubmitting(true);
     try {
       const payload = {
@@ -334,16 +342,23 @@ export default function Products() {
         inStock: !!form.inStock,
         isFeatured: !!form.isFeatured,
       };
+      
+      console.log('📦 Formatted payload:', payload);
 
       if (editing && editing.id) {
+        console.log('🔄 Updating product:', editing.id);
         await productsAPI.update(editing.id, payload);
+        console.log('✅ Product updated successfully');
       } else {
+        console.log('➕ Creating new product');
         await productsAPI.create(payload);
+        console.log('✅ Product created successfully');
       }
 
       await loadProducts();
       closeDialog();
     } catch (error) {
+      console.error('❌ Form submission error:', error);
       const { message } = apiUtils.handleError(error);
       alert(message);
     } finally {

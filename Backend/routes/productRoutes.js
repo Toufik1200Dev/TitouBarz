@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const adminAuth = require('../middleware/adminAuth');
 const { upload } = require('../config/storage');
 
 // Public routes
@@ -11,9 +12,9 @@ router.get('/search', productController.searchProducts);
 router.get('/category/:category', productController.getProductsByCategory);
 router.get('/:id', productController.getProductById);
 
-// Admin routes (these will be protected by admin middleware)
-router.post('/', upload.array('images', 5), productController.createProduct); // Allow up to 5 images
-router.put('/:id', upload.array('images', 5), productController.updateProduct);
-router.delete('/:id', productController.deleteProduct);
+// Admin routes (protected by admin middleware)
+router.post('/', adminAuth, productController.createProduct);
+router.put('/:id', adminAuth, productController.updateProduct);
+router.delete('/:id', adminAuth, productController.deleteProduct);
 
 module.exports = router; 

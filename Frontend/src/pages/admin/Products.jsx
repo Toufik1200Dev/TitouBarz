@@ -40,9 +40,29 @@ const placeholderImage = '/placeholder.svg?height=120&width=120';
 
 function normalizeProductFromApi(apiProduct) {
   if (!apiProduct) return null;
-  const firstImage = Array.isArray(apiProduct.images) && apiProduct.images.length > 0
-    ? apiProduct.images[0]
-    : apiProduct.image || placeholderImage;
+  
+  // Handle new image structure (objects with url property) and old structure (simple strings)
+  let firstImage = placeholderImage;
+  let images = [];
+  
+  if (Array.isArray(apiProduct.images)) {
+    images = apiProduct.images.map(img => {
+      if (typeof img === 'string') {
+        return img; // Old format: simple string
+      } else if (img && img.url) {
+        return img.url; // New format: object with url property
+      }
+      return '';
+    }).filter(Boolean);
+    
+    if (images.length > 0) {
+      firstImage = images[0];
+    }
+  } else if (apiProduct.image) {
+    firstImage = apiProduct.image;
+    images = [apiProduct.image];
+  }
+  
   return {
     id: apiProduct._id || apiProduct.id,
     name: apiProduct.name || '',
@@ -50,7 +70,7 @@ function normalizeProductFromApi(apiProduct) {
     originalPrice: apiProduct.originalPrice ? String(apiProduct.originalPrice) : '',
     description: apiProduct.description || '',
     category: apiProduct.category || '',
-    images: Array.isArray(apiProduct.images) ? apiProduct.images : (apiProduct.image ? [apiProduct.image] : []),
+    images: images,
     image: firstImage,
     stockQuantity: apiProduct.stockQuantity ?? 0,
     inStock: apiProduct.inStock ?? (apiProduct.stockQuantity > 0),

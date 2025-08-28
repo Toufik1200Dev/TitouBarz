@@ -111,9 +111,14 @@ exports.getProductById = async (req, res) => {
 // Create new product
 exports.createProduct = async (req, res) => {
   try {
+    console.log('🚀 Creating product with data:', req.body);
+    console.log('📁 Files received:', req.files);
+    
     let images = [];
     
+    // Handle file uploads first
     if (req.files && req.files.length > 0) {
+      console.log('📸 Processing uploaded files...');
       if (process.env.NODE_ENV === 'production') {
         // Production: Upload to Cloudinary
         try {
@@ -126,8 +131,9 @@ exports.createProduct = async (req, res) => {
             format: result.format,
             size: result.size
           }));
+          console.log('☁️ Cloudinary upload successful:', images);
         } catch (cloudinaryError) {
-          console.error('Cloudinary upload failed:', cloudinaryError);
+          console.error('❌ Cloudinary upload failed:', cloudinaryError);
           return res.status(500).json({ 
             message: 'Failed to upload images to cloud storage',
             error: cloudinaryError.message 
@@ -143,18 +149,22 @@ exports.createProduct = async (req, res) => {
           format: file.mimetype,
           size: file.size
         }));
+        console.log('💾 Local file paths created:', images);
       }
-    } else if (req.body.images) {
-      // If images are passed as URLs in body
-      const imageUrls = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
-      images = imageUrls.map(url => ({
-        url: url,
-        publicId: null,
-        width: null,
-        height: null,
-        format: null,
-        size: null
-      }));
+    } else if (req.body.images && Array.isArray(req.body.images)) {
+      // If images are passed as URLs in body (from frontend)
+      console.log('🔗 Processing image URLs from body:', req.body.images);
+      images = req.body.images
+        .filter(url => url && url.trim() !== '') // Filter out empty strings
+        .map(url => ({
+          url: url.trim(),
+          publicId: null,
+          width: null,
+          height: null,
+          format: null,
+          size: null
+        }));
+      console.log('🔗 Processed image URLs:', images);
     }
 
     // Create product data with images
@@ -163,11 +173,15 @@ exports.createProduct = async (req, res) => {
       images: images
     };
 
+    console.log('📦 Final product data:', productData);
+
     const product = new Product(productData);
     const savedProduct = await product.save();
+    
+    console.log('✅ Product created successfully:', savedProduct._id);
     res.status(201).json(savedProduct);
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error('❌ Error creating product:', error);
     res.status(400).json({ message: 'Error creating product', error: error.message });
   }
 };
@@ -175,10 +189,15 @@ exports.createProduct = async (req, res) => {
 // Update product
 exports.updateProduct = async (req, res) => {
   try {
+    console.log('🔄 Updating product:', req.params.id);
+    console.log('📁 Files received:', req.files);
+    console.log('📝 Body data:', req.body);
+    
     let images = req.body.images || [];
     
     // Handle new image uploads
     if (req.files && req.files.length > 0) {
+      console.log('📸 Processing new uploaded files...');
       if (process.env.NODE_ENV === 'production') {
         // Production: Upload to Cloudinary
         try {
@@ -194,8 +213,9 @@ exports.updateProduct = async (req, res) => {
           
           // Combine new images with existing ones
           images = [...images, ...newImages];
+          console.log('☁️ Cloudinary upload successful, combined images:', images);
         } catch (cloudinaryError) {
-          console.error('Cloudinary upload failed:', cloudinaryError);
+          console.error('❌ Cloudinary upload failed:', cloudinaryError);
           return res.status(500).json({ 
             message: 'Failed to upload new images to cloud storage',
             error: cloudinaryError.message 
@@ -214,7 +234,22 @@ exports.updateProduct = async (req, res) => {
         
         // Combine new images with existing ones
         images = [...images, ...newImages];
+        console.log('💾 Local file paths created, combined images:', images);
       }
+    } else if (req.body.images && Array.isArray(req.body.images)) {
+      // If images are passed as URLs in body (from frontend)
+      console.log('🔗 Processing image URLs from body:', req.body.images);
+      images = req.body.images
+        .filter(url => url && url.trim() !== '') // Filter out empty strings
+        .map(url => ({
+          url: url.trim(),
+          publicId: null,
+          width: null,
+          height: null,
+          format: null,
+          size: null
+        }));
+      console.log('🔗 Processed image URLs:', images);
     }
     
     // Update product data with images
@@ -222,6 +257,8 @@ exports.updateProduct = async (req, res) => {
       ...req.body,
       images: images
     };
+    
+    console.log('📦 Final update data:', updateData);
     
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -233,9 +270,10 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     
+    console.log('✅ Product updated successfully:', product._id);
     res.json(product);
   } catch (error) {
-    console.error('Error updating product:', error);
+    console.error('❌ Error updating product:', error);
     res.status(400).json({ message: 'Error updating product', error: error.message });
   }
 };
